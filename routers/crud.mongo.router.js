@@ -82,10 +82,14 @@ Routes definition
                             // Check user password
                             const validPassword = bcrypt.compareSync(req.body.password, user.password);
                             if( !validPassword ){
+                                // Generate user JWT
+                                const userCookie = user.generateJwt(user)
+                                res.cookie(process.env.COOKIE_NAME, userCookie);
+
                                 return res.status(500).json({
                                     method: 'POST',
                                     route: `/api/mongo/auth/login`,
-                                    data: null,
+                                    data: userCookie,
                                     error: 'Invalid password',
                                     status: 500
                                 });
