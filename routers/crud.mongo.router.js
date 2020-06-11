@@ -128,7 +128,11 @@ Routes definition
             /* 
             CRUD: Create route 
             */
-                this.router.post('/:endpoint', (req, res) => {
+                this.router.post('/:endpoint', this.passport.authenticate('jwt', { session: false }), (req, res) => {
+                    // Add authao _id in the bobdy request
+                    req.body.author = req.user._id;
+
+                    // Create new object
                     PostModel.create(req.body)
                     .then( document => res.status(201).json({
                         method: 'POST',
