@@ -2,7 +2,7 @@
 Imports
 */
     const JwtStrategy = require('passport-jwt').Strategy;
-    const UserModel = require('../models/user.schema');
+    const MyModel = require('../models/user.schema');
 //
 
 /*
@@ -25,7 +25,7 @@ Service definition
         
         // #JWT strategy
         passport.use(new JwtStrategy(opts, (jwtPayload, done) => {
-            UserModel.findOne({ _id: jwtPayload._id }, (err, user) => {
+            MyModel.findOne({ _id: jwtPayload._id, email: jwtPayload.email }, (err, user) => {
                 if (err) { return done(err, false)}
                 if (user) { 
                     return done(null, user) 

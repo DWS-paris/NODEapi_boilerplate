@@ -7,6 +7,7 @@ Imports
     const bodyParser = require('body-parser'); //=> https://www.npmjs.com/package/body-parser
     const cookieParser = require('cookie-parser'); //=> https://www.npmjs.com/package/cookie-parser
     const ejs = require('ejs'); //=> https://www.npmjs.com/package/ejs
+    const passport = require('passport'); //=> https://www.npmjs.com/package/passport
 
     // NodeJS modules
     const path = require('path'); //=> https://www.npmjs.com/package/path
@@ -43,7 +44,7 @@ Server class
                 // Allow actions for specific origins
                 res.header('Access-Control-Allow-Origin', ['http://127.0.0.1:8080']);
                 res.header('Access-Control-Allow-Credentials', 'true');
-                res.header('Access-Control-Allow-Methods', ['GET', 'PUT', 'POST', 'DELETE']);
+                res.header('Access-Control-Allow-Methods', ['GET', 'PUT', 'POST', 'DELETE', 'POST']);
                 res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 
                 // Enable access to specific origins
@@ -89,9 +90,14 @@ Server class
         }
 
         configMongo(){
+            // Authentication
+            const { setAuthentication } = require('./services/auth.service');
+            setAuthentication(passport);
+            
             // Set Mongo router
             const CrudMongoRouterClass = require('./routers/crud.mongo.router');
-            const crudMongoRouter = new CrudMongoRouterClass();
+            // Include passport in the routeur
+            const crudMongoRouter = new CrudMongoRouterClass({ passport });
             server.use('/api', crudMongoRouter.init());
 
             // Set front router

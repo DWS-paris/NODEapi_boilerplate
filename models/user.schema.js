@@ -3,7 +3,7 @@ Import
 */
     const mongoose = require('mongoose');
     const { Schema } = mongoose;
-    const jwt = require('jsonwebtoken');
+    const jwt = require('jsonwebtoken'); // https://www.npmjs.com/package/jsonwebtoken
 //
 
 
@@ -21,6 +21,7 @@ Definition
 Methods
 */
     MySchema.methods.generateJwt = (user) => {
+        
         // set expiration
         const expiry = new Date();
         expiry.setDate(expiry.getDate() + 59);
@@ -32,7 +33,7 @@ Methods
             exp: parseInt(expiry.getTime() / 100, 10)
         };
 
-        // JWT creation
+        // JWT creation 'HtKNZ24utVB1V21F67UNRxgp9RZIcO'
         return jwt.sign(jwtObj, process.env.JWT_SECRET )
     };
 //

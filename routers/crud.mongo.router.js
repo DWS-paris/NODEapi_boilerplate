@@ -18,9 +18,12 @@ Routes definition
     class CrudMongoRouterClass {
 
         // Inject Passport to secure routes
-        constructor() {
+        constructor({ passport }) {
             // Instanciate router
             this.router = express.Router();
+
+            // Instanciatee passport
+            this.passport = passport;
         };
         
         // Set route fonctions
@@ -82,10 +85,6 @@ Routes definition
                             // Check user password
                             const validPassword = bcrypt.compareSync(req.body.password, user.password);
                             if( !validPassword ){
-                                // Generate user JWT
-                                const userCookie = user.generateJwt(user)
-                                res.cookie(process.env.COOKIE_NAME, userCookie);
-
                                 return res.status(500).json({
                                     method: 'POST',
                                     route: `/api/mongo/auth/login`,
@@ -95,6 +94,10 @@ Routes definition
                                 });
                             }
                             else{
+                                // Generate user JWT
+                                res.cookie(process.env.COOKIE_NAME, user.generateJwt(user));
+
+                                // Return user data
                                 return res.status(201).json({
                                     method: 'POST',
                                     route: `/api/mongo/auth/login`,
@@ -104,6 +107,20 @@ Routes definition
                                 });
                             };
                         };
+                    });
+                });
+            //
+
+            /* 
+            AUTH: Me 
+            */
+                this.router.get('/auth/me', this.passport.authenticate('jwt', { session: false }), (req, res) => {
+                    return res.status(201).json({
+                        method: 'POST',
+                        route: `/api/mongo/auth/me`,
+                        data: req.user,
+                        error: null,
+                        status: 200
                     });
                 });
             //

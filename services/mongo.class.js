@@ -16,7 +16,7 @@ Define class
 
         connectDb(){
             return new Promise( (resolve, reject) => {
-                mongoose.connect(this.mongoUrl, { useNewUrlParser: true })
+                mongoose.connect(this.mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
                 .then( db => resolve( { db: db, url: this.mongoUrl } ))
                 .catch( dbErr => reject(`MongoDB not connected`, dbErr) )
             });
