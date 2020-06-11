@@ -12,6 +12,7 @@ Definition
     const MySchema = new Schema({
         title: String,
         content: String,
+        image: String,
         author: String
     });
 //

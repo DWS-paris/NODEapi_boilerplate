@@ -116,7 +116,6 @@ Server class
                     console.log({
                         node: `http://localhost:${port}`,
                         mongo: db.url,
-                        // mysql: `mysql://${process.env.MYSQL_HOST}:${process.env.MYSQL_PORT}`
                     });
                 });
             })

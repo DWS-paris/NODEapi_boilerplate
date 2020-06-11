@@ -115,12 +115,28 @@ Routes definition
             AUTH: Me 
             */
                 this.router.get('/auth/me', this.passport.authenticate('jwt', { session: false }), (req, res) => {
-                    return res.status(201).json({
-                        method: 'POST',
-                        route: `/api/mongo/auth/me`,
-                        data: req.user,
-                        error: null,
-                        status: 200
+                    // Get user info and post list from user _id (req.user._id)
+                    Promise.all([
+                        UserModel.findById(req.user._id),
+                        PostModel.find({ author: req.user._id })
+                    ])
+                    .then( mongoData => {
+                        return res.status(200).json({
+                            method: 'POST',
+                            route: `/api/mongo/auth/me`,
+                            data: { user: mongoData[0], posts: mongoData[1],  },
+                            error: null,
+                            status: 200
+                        });
+                    })
+                    .catch( mongoErr => {
+                        return res.status(500).json({
+                            method: 'POST',
+                            route: `/api/mongo/auth/me`,
+                            data: null,
+                            error: mongoErr,
+                            status: 500
+                        });
                     });
                 });
             //
@@ -156,19 +172,34 @@ Routes definition
             */
                 this.router.get('/:endpoint', (req, res) => {
                     PostModel.find()
-                    .then( documents => res.status(200).json({
-                        method: 'GET',
-                        route: `/api/mongo/${req.params.endpoint}`,
-                        data: documents,
-                        error: null,
-                        status: 200
-                    }))
-                    .catch( err => res.status(502).json({
+                    .then( async documents => {
+                        // Set post array
+                        let postArray = [];
+
+                        // Loop on documents
+                        for(let item of documents){
+                            // Get author info
+                            const author = await UserModel.findById(item.author);
+                            
+                            // push ddata in postArray
+                            postArray.push({ post: item, author });
+                        };
+
+                        // Send back data
+                        return res.status(200).json({
+                            method: 'GET',
+                            route: `/api/mongo/${req.params.endpoint}`,
+                            data: postArray,
+                            error: null,
+                            status: 200
+                        })
+                    })
+                    .catch( err => res.status(500).json({
                         method: 'GET',
                         route: `/api/${req.params.endpoint}`,
                         data: null,
                         error: err,
-                        status: 502
+                        status: 500
                     }));
                 });
             //
