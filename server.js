@@ -38,6 +38,19 @@ Server class
         }
 
         init(){
+            // Set CORS middleware
+            server.use( (req, res, next) => {
+                // Allow actions for specific origins
+                res.header('Access-Control-Allow-Origin', ['http://127.0.0.1:8080']);
+                res.header('Access-Control-Allow-Credentials', 'true');
+                res.header('Access-Control-Allow-Methods', ['GET', 'PUT', 'POST', 'DELETE']);
+                res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+
+                // Enable access to specific origins
+                next();
+            });
+
+            // Set server view engine
             server.engine( 'html', ejs.renderFile );
             server.set( 'view engine', 'html' );
             
@@ -53,22 +66,16 @@ Server class
             server.use(cookieParser(process.env.COOKIE_SECRET));
 
             // Start server configuration
-            this.config();
+            this.configMongo();
         };
 
-        config(){
-            // Connect the DB
+        configMySql(){
             this.MYSQL.connectDb()
             .then( connection => {
-                // Set Mongo router
-                const CrudMongoRouterClass = require('./routers/crud.mongo.router');
-                const crudMongoRouter = new CrudMongoRouterClass();
-                server.use('/api/mongo', crudMongoRouter.init());
-
                 // Set MySQL router
                 const CrudMySqlRouterClass = require('./routers/crud.mysql.router');
                 const crudmySqlRouter = new CrudMySqlRouterClass(connection);
-                server.use('/api/mysql', crudmySqlRouter.init());
+                server.use('/api', crudmySqlRouter.init());
 
                 // Set front router
                 server.get('/*',  (req, res) => res.render('index') );
@@ -79,6 +86,19 @@ Server class
             .catch( connectionError => {
                 console.log(`MYsql connection error: ${connectionError}`)
             })
+        }
+
+        configMongo(){
+            // Set Mongo router
+            const CrudMongoRouterClass = require('./routers/crud.mongo.router');
+            const crudMongoRouter = new CrudMongoRouterClass();
+            server.use('/api', crudMongoRouter.init());
+
+            // Set front router
+            server.get('/*',  (req, res) => res.render('index') );
+
+            // Launch server
+            this.launch();
         };
 
         launch(){
@@ -90,7 +110,7 @@ Server class
                     console.log({
                         node: `http://localhost:${port}`,
                         mongo: db.url,
-                        mysql: `mysql://${process.env.MYSQL_HOST}:${process.env.MYSQL_PORT}`
+                        // mysql: `mysql://${process.env.MYSQL_HOST}:${process.env.MYSQL_PORT}`
                     });
                 });
             })
